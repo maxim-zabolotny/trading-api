@@ -18,7 +18,7 @@ export class User extends BaseEntity {
   password: string;
 
   @Column()
-  roleId: number;
+  role: number;
 
   @Column({
     default: false,

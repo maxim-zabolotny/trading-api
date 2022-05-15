@@ -19,7 +19,7 @@ const config = {
   }
 };
 
-if (JSON.parse(process.env.POSTGRES_SSL_ENABLED)) {
+if (JSON.parse(process.env.POSTGRES_SSL_ENABLED || false)) {
   config.ssl = { rejectUnauthorized: false };
 }
 
