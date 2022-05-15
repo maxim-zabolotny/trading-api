@@ -28,13 +28,10 @@ export class User extends BaseEntity {
   @Column({
     nullable: true,
   })
-  firstName: string
+  firstName: string;
 
   @Column({
     nullable: true,
   })
-  phone: string
-
-
-
+  phone: string;
 }
