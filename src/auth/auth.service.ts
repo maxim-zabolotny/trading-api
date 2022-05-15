@@ -32,7 +32,6 @@ export class AuthService {
     }
 
     delete user.password;
-
     const token = this.jwtService.sign({ ...user });
 
     return { user, token };
