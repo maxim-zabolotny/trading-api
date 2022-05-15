@@ -25,4 +25,16 @@ export class User extends BaseEntity {
   })
   isConfirmed: boolean;
 
+  @Column({
+    nullable: true,
+  })
+  firstName: string
+
+  @Column({
+    nullable: true,
+  })
+  phone: string
+
+
+
 }

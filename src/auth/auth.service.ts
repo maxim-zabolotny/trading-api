@@ -15,7 +15,7 @@ export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
   }
 
@@ -23,12 +23,12 @@ export class AuthService {
     const { email, password } = body;
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new HttpException('There is no such user', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Incorrect email or password', HttpStatus.BAD_REQUEST);
     }
 
     const areEqual = await compare(String(password), user.password);
     if (!areEqual) {
-      throw new HttpException('Incorrect password', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Incorrect email or password', HttpStatus.BAD_REQUEST);
     }
 
     delete user.password;
@@ -38,7 +38,7 @@ export class AuthService {
   }
 
   public async registerUser(body: RegisterUserDto): Promise<HttpException> {
-    let { email, password } = body;
+    let { email, password, firstName } = body;
 
     const toLowerEmail = email.toLowerCase();
 
@@ -46,8 +46,8 @@ export class AuthService {
 
     if (findUser) {
       throw new HttpException(
-        `User email or login already exist`,
-        HttpStatus.BAD_REQUEST,
+        `Such email already exist`,
+        HttpStatus.CONFLICT,
       );
     }
 
@@ -56,7 +56,8 @@ export class AuthService {
     const user = await this.userService.createUser({
       email: toLowerEmail,
       role: Roles.user,
-      password
+      password,
+      firstName,
     });
 
     return new HttpException(

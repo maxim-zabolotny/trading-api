@@ -1,7 +1,7 @@
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   Body,
-  Controller,
+  Controller, HttpStatus,
   Post,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -12,14 +12,22 @@ import { AuthResponse, LoginUserDto, RegisterUserDto } from './dtos';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Login user' })
   @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiResponse({
+    description: 'Incorrect email or password',
+    status: HttpStatus.BAD_REQUEST
+  })
   public async loginUser(@Body() dto: LoginUserDto): Promise<AuthResponse> {
     return await this.authService.loginUser(dto);
   }
 
-  @ApiOperation({ summary: 'Registration user' })
   @Post('register')
+  @ApiOperation({ summary: 'Registration user' })
+  @ApiResponse({
+    description: 'Such email already exist',
+    status: HttpStatus.CONFLICT
+  })
   public async registerUser(
     @Body() dto: RegisterUserDto,
   ): Promise<boolean> {

@@ -31,9 +31,9 @@ export class UsersRepositoryService {
     return this.usersRepository.save(user);
   }
 
-  async update(id: number, updateCollection: IUpdateUser) {
+  async update(id: number, updatedUser: IUpdateUser) {
     return this.usersRepository.update(id, {
-      ...updateCollection,
+      ...updatedUser,
     });
   }
 
