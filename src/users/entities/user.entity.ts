@@ -1,8 +1,10 @@
 import { BaseEntity } from 'src/common/entities';
+import { Payments } from 'src/payments';
 import {
   Column,
   Entity,
   Index,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('users')
@@ -34,4 +36,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   phone: string;
+
+  @OneToMany(() => Payments, (moneyTransfers) => moneyTransfers.user)
+  public moneyTransfers: Payments[];
 }
