@@ -16,6 +16,11 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(),
+    {
+      cors: {
+        origin: ['localhost']
+      }
+    }
   );
 
   app.enable('trust proxy');
