@@ -17,7 +17,9 @@ async function bootstrap(): Promise<void> {
     AppModule,
     new ExpressAdapter(),
     {
-      cors: false,
+      cors: {
+        origin: '*',
+      },
       // ['localhost', '127.0.0.1']
     },
   );
