@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config();
 
 import { Reflector, NestFactory } from '@nestjs/core';
 import RateLimit from 'express-rate-limit';
@@ -17,10 +17,9 @@ async function bootstrap(): Promise<void> {
     AppModule,
     new ExpressAdapter(),
     {
-      cors: {
-        origin: ['localhost']
-      }
-    }
+      cors: false,
+      // ['localhost', '127.0.0.1']
+    },
   );
 
   app.enable('trust proxy');
