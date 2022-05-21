@@ -1,12 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersRepositoryService } from './users.repository.service';
 import { ICreateUser } from './interfaces';
 import { User } from './entities';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ConfirmationToken } from './entities/confirmation-token.entity';
+import { Repository } from 'typeorm';
+import { compare, hashSync } from 'bcrypt';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepositoryService: UsersRepositoryService,
+    @InjectRepository(ConfirmationToken)
+    private readonly confirmationTokenRepository: Repository<ConfirmationToken>,
   ) {
   }
 
@@ -19,7 +34,71 @@ export class UsersService {
   }
 
   async createUser(body: ICreateUser): Promise<boolean> {
-    return !!await this.userRepositoryService.create(body)
+    return !!await this.userRepositoryService.create(body);
+  }
+
+  async getProfile(userId: number): Promise<User> {
+    const user = await this.findById(userId);
+    delete user.password;
+    return user;
+  }
+
+  async changePassword(
+    userId: number,
+    body: ChangePasswordDto,
+  ): Promise<any> {
+    const user = await this.findById(userId);
+
+    if (!user) throw new UnauthorizedException('');
+
+    const currentPassword = await compare(
+      String(body.currentPassword),
+      user.password,
+    );
+
+    if (!currentPassword) {
+      throw new BadRequestException('Incorect password');
+    }
+
+    body.newPassword = hashSync(body.newPassword, JSON.parse(process.env.SALT));
+
+    await this.userRepositoryService.update(userId, {
+      password: body.newPassword,
+    });
+
+    return new HttpException('', HttpStatus.OK);
+  }
+
+  async installPassword(body: ResetPasswordDto): Promise<User> {
+    const { userId } = body;
+    const code = await this.confirmationTokenRepository.findOne({
+      where: { userId: userId },
+    });
+    if (!code) {
+      throw new NotFoundException('The user has not sent a password request!');
+    }
+    const isTokenProper = code.token === body.token;
+
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('The user has not sent a password request!');
+    }
+
+    body.newPassword = hashSync(body.newPassword, JSON.parse(process.env.SALT));
+
+    if (!isTokenProper) {
+      throw new BadRequestException('The code does not match!');
+    }
+    const newUser = user;
+    newUser.password = body.newPassword;
+
+    await Promise.all([
+      this.confirmationTokenRepository.delete(code),
+      this.userRepositoryService.create(newUser),
+    ]);
+    delete newUser.password;
+
+    return newUser;
   }
 
 }

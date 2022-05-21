@@ -5,23 +5,32 @@ import {
 } from '@nestjs/common';
 import { compare, hashSync } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users';
+import { User, UsersRepositoryService, UsersService } from 'src/users';
 import { AuthResponse, LoginUserDto, RegisterUserDto } from './dtos';
 import { Roles } from '../common/enums/roles.enum';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UsersService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
   }
 
   public async loginUser(body: LoginUserDto): Promise<AuthResponse> {
+    console.log(body);
     const { email, password } = body;
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email
+      }
+    });
+    console.log(user);
     if (!user) {
       throw new HttpException('Incorrect email or password', HttpStatus.BAD_REQUEST);
     }
@@ -37,12 +46,14 @@ export class AuthService {
     return { user, token };
   }
 
-  public async registerUser(body: RegisterUserDto): Promise<HttpException> {
+  public async registerUser(body: RegisterUserDto): Promise<User> {
     let { email, password, firstName } = body;
 
     const toLowerEmail = email.toLowerCase();
 
-    const findUser = await this.userService.findByEmail(email);
+    const findUser = await this.userRepository.findOne({
+      email: email
+    });
 
     if (findUser) {
       throw new HttpException(
@@ -52,17 +63,13 @@ export class AuthService {
     }
 
     password = hashSync(password, JSON.parse(this.configService.get('SALT')));
-
-    const user = await this.userService.createUser({
+    const user = await this.userRepository.save({
       email: toLowerEmail,
       role: Roles.user,
       password,
       firstName,
     });
 
-    return new HttpException(
-      'To complete registration, you need to confirm your email',
-      HttpStatus.OK,
-    );
+    return user
   }
 }

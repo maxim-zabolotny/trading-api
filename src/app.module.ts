@@ -10,8 +10,8 @@ import { PaymentsModule } from './payments/payments.module';
     TypeOrmModule.forRoot(),
     ConfigModule.forRoot(),
     UsersModule,
-    AuthModule,
     PaymentsModule,
+    AuthModule,
   ],
 })
 export class AppModule {
