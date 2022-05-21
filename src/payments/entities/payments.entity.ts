@@ -21,7 +21,7 @@ export class Payments extends BaseEntity {
   @Column({ nullable: true })
   txService: string;
 
-  @ManyToOne(({}) => User, (users) => users.moneyTransfers, {
+  @ManyToOne(() => User, (users) => users.payments, {
     onUpdate: 'CASCADE',
     onDelete: 'NO ACTION',
     createForeignKeyConstraints: false,

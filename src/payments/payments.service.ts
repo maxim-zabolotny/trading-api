@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Payments } from './entities/payments.entity';
 
 @Injectable()
 export class PaymentsService {
-  constructor() {
+  constructor(
+    @InjectRepository(Payments)
+    private paymentsRepository: Repository<Payments>,
+  ) {
   }
 
   async walletReplenishByCoinBaseConfirmed(body): Promise<any> {
@@ -12,82 +18,56 @@ export class PaymentsService {
       const { userId, quantity } = metadata;
 
       if (event == 'charge:confirmed') {
-        return this.walletReplenish({
+        return this.paymentsRepository.save({
           quantity,
           userId,
           txId: id,
           txService: 'coinBase',
+          status: true,
         });
       }
     }
   }
 
-  async walletReplenish(
-    walletReplenishDto: WalletReplenishDto,
-  ): Promise<WallerReplenishResponse> {
-    const { quantity, wallet, txId, txService } = walletReplenishDto;
-
-    if (!user) throw new NotFoundException('User not found');
-
-    const transfer = {
-      userId: user.id,
-      coinCounts: Number(quantity),
-      transferCLBIStatus: false,
-      txId: txId,
-      txService: txService,
-    };
-
-    const {
-      id,
-      coinCounts,
-    } = await this.moneyTransferService.createUserTransfer(transfer);
-
-    const transferCLBI = await this.blockchainService.sendCoins({
-      walletAddress: user.wallet,
-      moneyTransferId: id,
-      count: coinCounts,
-      isFirstDeposit: user.isFirstDeposit,
-    });
-
-    if (!transferCLBI.status)
-      throw new BadRequestException('Transaction failed');
-
-    const newBalance = await this.blockchainService.getBalance(
-      convertAdreessClbiToEth(user.wallet),
-    );
-
-    //const newBalance = Number(user.balance) + Number(quantity);
-    const currencyCLBI = (await presaleInfo()).value;
-
-    await this.refererPayment(user, Number(quantity), currencyCLBI);
-
-    const { refPercent, tariffPlan } = this.checkBalance(
-      newBalance,
-      currencyCLBI,
-    );
-    let updateUser = {
-      ...user,
-      balance: newBalance,
-      refPercent: refPercent,
-      tariffPlan: tariffPlan,
-      isFreeSpin: true,
-    };
-
-    if (user.isFirstDeposit) {
-      updateUser = { ...updateUser, isFirstDeposit: false };
-    }
-
-    await this.userRepository.update(user.id, updateUser);
-
-    const data = { count: quantity, type: 'replenished' };
-
-    await this.informerService.sendNotification(user.id, data);
-
-    return {
-      walletAddress: user.wallet,
-      moneyTransferId: 2,
-      clbiCounts: 2,
-    };
-  }
-
+  // async walletReplenish(
+  //   body: IReplenish,
+  // ): Promise<any> {
+  //   const { quantity, wallet, txId, txService } = body;
+  //
+  //   const transfer = {
+  //     userId: user.id,
+  //     coinCounts: Number(quantity),
+  //     transferCLBIStatus: false,
+  //     txId: txId,
+  //     txService: txService,
+  //   };
+  //
+  //   const {
+  //     id,
+  //     coinCounts,
+  //   } = await this.moneyTransferService.createUserTransfer(transfer);
+  //
+  //   let updateUser = {
+  //     ...user,
+  //     balance: newBalance,
+  //     refPercent: refPercent,
+  //     tariffPlan: tariffPlan,
+  //     isFreeSpin: true,
+  //   };
+  //
+  //   if (user.isFirstDeposit) {
+  //     updateUser = { ...updateUser, isFirstDeposit: false };
+  //   }
+  //
+  //   await this.userRepository.update(user.id, updateUser);
+  //
+  //   const data = { count: quantity, type: 'replenished' };
+  //
+  //
+  //   return {
+  //     walletAddress: user.wallet,
+  //     moneyTransferId: 2,
+  //     clbiCounts: 2,
+  //   };
+  // }
 }

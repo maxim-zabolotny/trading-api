@@ -7,8 +7,8 @@ import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
     TypeOrmModule.forRoot(),
+    ConfigModule.forRoot(),
     UsersModule,
     AuthModule,
     PaymentsModule,
