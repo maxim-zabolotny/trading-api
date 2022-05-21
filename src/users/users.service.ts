@@ -9,12 +9,12 @@ import {
 import { UsersRepositoryService } from './users.repository.service';
 import { ICreateUser } from './interfaces';
 import { User } from './entities';
-import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfirmationToken } from './entities/confirmation-token.entity';
 import { Repository } from 'typeorm';
 import { compare, hashSync } from 'bcrypt';
+import { ConfirmationToken } from './entities/confirmation-token.entity';
 import { ChangePasswordDto } from './dtos/change-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -99,6 +99,32 @@ export class UsersService {
     delete newUser.password;
 
     return newUser;
+  }
+
+  async sendMessageSupport(mail, file) {
+    let options = {
+      to: process.env.FROM_SUPPORT,
+      from: `"${mail.email}" <${process.env.SMTP_BASE_FROM}>`,
+      context: {
+        message: mail.message,
+      },
+      subject: mail.theme,
+      text: mail.message,
+      template: 'support-message',
+      attachments: undefined,
+    };
+
+    if (file) {
+      options = {
+        ...options,
+        attachments: {
+          filename: file.originalname,
+          path: file.path,
+          contentType: mail.mimeType,
+        },
+      };
+    }
+    // await this.mailService.sendSupportEmail(options);
   }
 
 }
