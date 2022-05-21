@@ -24,8 +24,7 @@ async function bootstrap(): Promise<void> {
     },
   );
 
-  app.enable('trust proxy');
-  app.use(RateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
+  // app.use(RateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
   app.use(morgan('dev'));
   app.setGlobalPrefix('api');
 
