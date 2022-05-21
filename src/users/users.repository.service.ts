@@ -21,7 +21,7 @@ export class UsersRepositoryService {
   async findByEmail(email: string): Promise<User> {
     return this.usersRepository.findOne({
       where: {
-        email: email
+        email: email,
       },
     });
   }

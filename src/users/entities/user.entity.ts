@@ -37,6 +37,12 @@ export class User extends BaseEntity {
   })
   phone: string;
 
+  @Column({
+    default: 0,
+    type: 'numeric'
+  })
+  balance: number;
+
   @OneToMany(() => Payments, (moneyTransfers) => moneyTransfers.user)
   public payments: Payments[];
 }
