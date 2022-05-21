@@ -66,8 +66,9 @@ export class UsersController {
   public async sendMessageSupport(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: SupportRequestDto,
+    @AuthUser() user: User,
   ): Promise<void> {
-    return await this.userService.sendMessageSupport(body, file);
+    return await this.userService.sendMessageSupport(body, file, user.email);
   }
 
 }

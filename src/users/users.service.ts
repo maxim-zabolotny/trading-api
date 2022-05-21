@@ -101,10 +101,10 @@ export class UsersService {
     return newUser;
   }
 
-  async sendMessageSupport(mail, file) {
+  async sendMessageSupport(mail, file, email) {
     let options = {
       to: process.env.FROM_SUPPORT,
-      from: `"${mail.email}" <${process.env.SMTP_BASE_FROM}>`,
+      from: `"${email}" <${process.env.SMTP_BASE_FROM}>`,
       context: {
         message: mail.message,
       },
@@ -126,5 +126,4 @@ export class UsersService {
     }
     // await this.mailService.sendSupportEmail(options);
   }
-
 }
