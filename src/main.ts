@@ -1,49 +1,39 @@
 require('dotenv').config();
 
-import { Reflector, NestFactory } from '@nestjs/core';
-import RateLimit from 'express-rate-limit';
-import * as morgan from 'morgan';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import {
-  ExpressAdapter,
-  NestExpressApplication,
-} from '@nestjs/platform-express';
-import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+
 import { AppModule } from './app.module';
-import { setupSwagger } from './utils';
+import { join } from 'path';
 
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    new ExpressAdapter(),
-    {
-      cors: {
-        origin: '*',
-      },
-      // ['localhost', '127.0.0.1']
-    },
-  );
-
-  // app.use(RateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
-  app.use(morgan('dev'));
-  app.setGlobalPrefix('api');
-
-  const reflector = app.get(Reflector);
-
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       transform: true,
-      dismissDefaultMessages: false,
-      validationError: { target: false },
+      whitelist: true,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
+  app.enableCors();
 
-  setupSwagger(app);
+  const options = new DocumentBuilder()
+    .setTitle('API')
+    .setDescription('The API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 
-  const configService = app.get(ConfigService);
-  await app.listen(configService.get('PORT'));
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api/v1/swagger-html', app, document);
+
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.setViewEngine('hbs');
+
+  await app.listen(JSON.parse(process.env.PORT));
+  console.info(`Application is running on: ${await app.getUrl()}`);
 }
 
-void bootstrap();
+bootstrap();
