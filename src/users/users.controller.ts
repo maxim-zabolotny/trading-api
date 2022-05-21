@@ -15,10 +15,10 @@ import { AuthUser } from 'src/common/decorators/user.decorator';
 import { User } from './entities';
 import { JwtAuthGuard } from 'src/common/guards/jwr.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { editFileName, fileFilter, imageFileFilter } from 'src/utils/file-upload.utils';
-import { SupportRequestDto } from './dtos/support-meesage.dto';
+import { editFileName, fileFilter } from 'src/utils/file-upload.utils';
 import { diskStorage } from 'multer';
 import { ChangePasswordDto } from './dtos/change-password.dto';
+import { SupportRequestDto } from './dtos/support-meesage.dto';
 
 @Controller('users')
 @ApiBearerAuth()
@@ -60,7 +60,7 @@ export class UsersController {
         destination: './uploads/support',
         filename: editFileName,
       }),
-      fileFilter: fileFilter,
+      // fileFilter: fileFilter,
     }),
   )
   public async sendMessageSupport(

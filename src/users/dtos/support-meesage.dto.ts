@@ -13,8 +13,4 @@ export class SupportRequestDto {
   @ApiProperty()
   @IsString()
   message: string;
-
-  @ApiProperty()
-  @IsString()
-  priority: string;
 }
